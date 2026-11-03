@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Conversor de Imagens para Base64 & Data URI • 4U.IA.BR</title>
+    <meta name="description" content="Converta imagens JPG, PNG, WebP, GIF e SVG para Base64, Data URL, CSS e HTML. Compressão real via Canvas, suporte a Ctrl+V e 100% no seu navegador."/>
+    <link rel="icon" type="image/png" href="/loja/favicon-32x32.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="style.css?v=2.0" rel="stylesheet"/>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div class="mesh-overlay"></div>
+
+    <div class="app-container">
+        <!-- Top Bar Navigation -->
+        <nav class="top-nav">
+            <a href="https://4u.ia.br/loja/" class="brand-link" title="Voltar para a Loja de Apps 4U">
+                <div class="brand-badge">
+                    <span class="brand-icon">⚡</span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">4u.ia.br</span>
+                    <span class="brand-sub">/ code64</span>
+                </div>
+            </a>
+            <div class="top-actions">
+                <span class="privacy-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>100% Client-Side Privado</span>
+                </span>
+                <a href="https://4u.ia.br/loja/" class="back-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <span>Loja de Apps</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Header -->
+        <header class="app-header">
+            <div class="header-badge">FERRAMENTA PARA DESENVOLVEDORES</div>
+            <h1>Conversor de Imagens para <span class="gradient-text">Base64</span></h1>
+            <p>Codifique, comprima e decodifique imagens instantaneamente no seu navegador sem enviar nada para servidores externos.</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Dropzone Area -->
+            <div class="upload-dropzone" id="uploadArea">
+                <input accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/bmp,image/x-icon,image/avif" class="file-input" id="fileInput" multiple="" type="file"/>
+                <div class="dropzone-glow"></div>
+                <div class="upload-icon-wrapper">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-pulse"></div>
+                </div>
+                <h3 class="upload-title">Arraste e solte suas imagens aqui</h3>
+                <p class="upload-subtitle">ou clique para selecionar do seu aparelho</p>
+                
+                <div class="paste-tip">
+                    <kbd>Ctrl</kbd> + <kbd>V</kbd>
+                    <span>Cole qualquer print copiado na área de transferência</span>
+                </div>
+
+                <div class="dropzone-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Selecionar Imagens</span>
+                    </button>
+                    <button type="button" class="btn btn-glass" onclick="converter.pasteImageFromClipboard()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                        <span>Colar Print</span>
+                    </button>
+                </div>
+
+                <div class="upload-specs">
+                    <span>Formatos: <strong>JPG, PNG, WebP, GIF, SVG, BMP, AVIF, ICO</strong></span>
+                    <span>•</span>
+                    <span>Até <strong>25 MB</strong> por arquivo</span>
+                    <span>•</span>
+                    <span>Até <strong>30 imagens</strong> em lote</span>
+                </div>
+            </div>
+
+            <!-- Optimization & Format Settings -->
+            <div class="settings-card">
+                <div class="settings-header">
+                    <div class="settings-title">
+                        <div class="settings-icon">⚡</div>
+                        <div>
+                            <h3>Compressão & Otimização Real</h3>
+                            <p>Reduza o tamanho da string Base64 em até 70% processando no Canvas local.</p>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input checked="" id="optimizeToggle" type="checkbox"/>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-body" id="optimizeControls">
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label>Qualidade de Compressão:</label>
+                            <div class="pill-group" id="qualitySelector">
+                                <button type="button" class="pill-btn" data-quality="1.0">100% (Sem perdas)</button>
+                                <button type="button" class="pill-btn active" data-quality="0.85">85% (Alta)</button>
+                                <button type="button" class="pill-btn" data-quality="0.70">70% (Equilibrada)</button>
+                                <button type="button" class="pill-btn" data-quality="0.50">50% (Compacta)</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Redimensionar Largura Máxima:</label>
+                            <div class="pill-group" id="resizeSelector">
+                                <button type="button" class="pill-btn active" data-max="original">Original</button>
+                                <button type="button" class="pill-btn" data-max="1920">1920px (FHD)</button>
+                                <button type="button" class="pill-btn" data-max="1280">1280px (HD)</button>
+                                <button type="button" class="pill-btn" data-max="800">800px (Web)</button>
+                                <button type="button" class="pill-btn" data-max="400">400px (Ícone)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="format-section">
+                    <div class="format-header">
+                        <h4>📋 Formato de Saída do Código:</h4>
+                        <span class="format-tip">Clique para alternar o código gerado em todos os resultados</span>
+                    </div>
+
+                    <div class="format-selector">
+                        <div class="format-btn active" data-format="dataurl">
+                            <span class="format-name">Data URL</span>
+                            <small>data:image/...;base64,...</small>
+                        </div>
+                        <div class="format-btn" data-format="base64only">
+                            <span class="format-name">Apenas Base64</span>
+                            <small>/9j/4AAQSkZJRg...</small>
+                        </div>
+                        <div class="format-btn" data-format="css">
+                            <span class="format-name">CSS Background</span>
+                            <small>background-image: url(...)</small>
+                        </div>
+                        <div class="format-btn" data-format="html">
+                            <span class="format-name">HTML &lt;img&gt;</span>
+                            <small>&lt;img src="..." alt=""&gt;</small>
+                        </div>
+                        <div class="format-btn" data-format="markdown">
+                            <span class="format-name">Markdown</span>
+                            <small>![Image](data:image/...)</small>
+                        </div>
+                        <div class="format-btn" data-format="js">
+                            <span class="format-name">JavaScript / TS</span>
+                            <small>const image = "..."</small>
+                        </div>
+                        <div class="format-btn" data-format="json">
+                            <span class="format-name">JSON Object</span>
+                            <small>{ "base64": "..." }</small>
+                        </div>
+                    </div>
+
+                    <div class="format-preview" id="formatPreview">
+                        <div class="preview-header">
+                            <span class="preview-badge" id="previewBadge">Data URL</span>
+                            <span class="preview-desc" id="previewDescription"></span>
+                        </div>
+                        <div class="preview-code-box">
+                            <code id="previewCode"></code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🖼️</div>
+                    <div>
+                        <div class="stat-number" id="totalImages">0</div>
+                        <div class="stat-label">Imagens Convertidas</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚖️</div>
+                    <div>
+                        <div class="stat-number" id="totalSize">0 KB</div>
+                        <div class="stat-label">Tamanho Original</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💾</div>
+                    <div>
+                        <div class="stat-number stat-highlight" id="savedSize">0 KB</div>
+                        <div class="stat-label">Espaço Economizado</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📉</div>
+                    <div>
+                        <div class="stat-number stat-highlight" id="compressionRatio">0%</div>
+                        <div class="stat-label">Taxa de Compressão Real</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batch Action Bar (Appears when results exist) -->
+            <div class="batch-bar" id="batchBar" style="display: none;">
+                <div class="batch-info">
+                    <span class="batch-count" id="batchCount">0 imagens processadas</span>
+                </div>
+                <div class="batch-actions">
+                    <button type="button" class="btn btn-emerald" onclick="converter.copyAllResults()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copiar Todos</span>
+                    </button>
+                    <button type="button" class="btn btn-cyan" onclick="converter.downloadAllJSON()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        <span>Exportar JSON</span>
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="converter.clearAllResults()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Limpar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results List -->
+            <div class="results-section" id="resultsSection"></div>
+
+            <!-- Decode Base64 to Image Section -->
+            <div class="decode-section">
+                <div class="decode-header">
+                    <div class="decode-icon">🔍</div>
+                    <div>
+                        <h3>Decodificar Base64 para Imagem</h3>
+                        <p>Cole qualquer código Base64 ou Data URI para visualizar, inspecionar e baixar a imagem original.</p>
+                    </div>
+                </div>
+
+                <div class="base64-input-container">
+                    <textarea id="base64Input" placeholder="Cole aqui seu código Base64 (com ou sem data:image/...)..." rows="4"></textarea>
+                    
+                    <div class="input-buttons">
+                        <button type="button" class="btn btn-primary" onclick="converter.decodeBase64()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <span>Visualizar Imagem</span>
+                        </button>
+                        <button type="button" class="btn btn-glass" onclick="converter.pasteFromClipboard()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                            <span>Colar do Teclado</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="converter.clearBase64Input()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            <span>Limpar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="decoded-result" id="decodedResult" style="display: none;">
+                    <div class="decoded-card">
+                        <div class="decoded-top-bar">
+                            <div class="decoded-heading">
+                                <span class="badge-success">Imagem Identificada</span>
+                                <span class="decoded-badge" id="decodedFormatBadge">PNG</span>
+                            </div>
+                            
+                            <div class="decoded-actions">
+                                <div class="bg-toggle" title="Alterar fundo de visualização">
+                                    <button type="button" class="bg-btn active" data-bg="checkerboard" title="Fundo Xadrez Transparente">🏁</button>
+                                    <button type="button" class="bg-btn" data-bg="dark" title="Fundo Escuro">🌑</button>
+                                    <button type="button" class="bg-btn" data-bg="light" title="Fundo Claro">☀️</button>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="converter.downloadDecodedImage()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                                    <span>Baixar Arquivo</span>
+                                </button>
+                                <button type="button" class="btn btn-glass btn-sm" onclick="converter.copyDecodedImageToClipboard()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    <span>Copiar Imagem</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="decoded-grid">
+                            <div class="decoded-preview-box bg-checkerboard" id="decodedBox">
+                                <img alt="Imagem decodificada" id="decodedImage"/>
+                            </div>
+                            <div class="decoded-info-panel" id="decodedDetails"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features & FAQ Section -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h4>100% Offline & Local</h4>
+                    <p>O processamento ocorre integralmente no processador da sua máquina via JavaScript e Canvas API. Zero telemetria.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h4>Privacidade Blindada</h4>
+                    <p>Ideal para documentos sigilosos, fotos pessoais e prints de senhas ou tokens que nunca podem ser enviados a servidores.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h4>Ultra Compatível</h4>
+                    <p>Gera código limpo pronto para HTML5, CSS3, Markdown, React, Vue, Next.js, Node.js e bancos de dados SQL/NoSQL.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Standardized 4U.IA.BR Footer -->
+    <footer class="footer-clean">
+        <div class="footer-content">
+            <span class="footer-logo">⚡ 4U.IA.BR</span>
+            <span class="footer-sep">•</span>
+            <a href="https://4u.ia.br/loja/" class="footer-link">Explorar Loja de Aplicativos</a>
+            <span class="footer-sep">•</span>
+            <span class="footer-copy">© 2026 4U LABS — TODOS OS DIREITOS RESERVADOS</span>
+        </div>
+    </footer>
+
+    <script src="script.js?v=2.0"></script>
+</body>
+</html>
